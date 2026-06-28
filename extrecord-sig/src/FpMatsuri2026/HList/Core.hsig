@@ -1,9 +1,8 @@
-{-# LANGUAGE DataKinds, GADTs, TypeFamilies #-}
 signature FpMatsuri2026.HList.Core (
-  HList ,
+  HList,
   (<|),
   hnil,
-  Member(..),
+  Member (..),
   hmap,
   hzipWith,
   hzipWith3,
@@ -14,12 +13,12 @@ signature FpMatsuri2026.HList.Core (
   hfoldl',
   hfoldr,
   hfoldr',
-  All(..),
+  All (..),
 ) where
 
 import Data.Kind
-import GHC.TypeError
 import FpMatsuri2026.TypeOps
+import GHC.TypeError
 
 type HList :: (k -> Type) -> [k] -> Type
 data HList f xs
@@ -37,7 +36,6 @@ class Member x xs where
 instance
   (Unsatisfiable ('ShowType x ':<>: 'Text " is not a member")) =>
   Member x '[]
-  where
 
 instance {-# OVERLAPPING #-} Member x (x ': xs)
 

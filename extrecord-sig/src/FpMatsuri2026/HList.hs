@@ -1,7 +1,21 @@
 module FpMatsuri2026.HList (
-  module FpMatsuri2026.HList.Core,
+  HList,
+  (<|),
+  hnil,
+  Member (..),
   hLookup,
   hReplace,
+  hmap,
+  hzipWith,
+  hzipWith3,
+  hfoldMap,
+  hfoldMap1,
+  hintercalateMap1,
+  hfoldl,
+  hfoldl',
+  hfoldr,
+  hfoldr',
+  All (..),
 ) where
 
 import FpMatsuri2026.HList.Core
