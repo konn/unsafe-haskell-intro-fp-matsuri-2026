@@ -62,7 +62,6 @@ library extrecord-safe-impl
     containers,
     dlist,
     extrecord-core,
-    extrecord-sig,
     fmlist,
     ghc-tcplugin-api,
     ghc-tcplugins-extra,
@@ -116,7 +115,7 @@ library
     vector,
 
   mixins:
-    extrecord-sig requires (FpMatsuri2026.HList.Core as FpMatsuri2026.HList.Safe.Core)
+    extrecord-sig (FpMatsuri2026.ExtRec as FpMatsuri2026.ExtRecord.Safe, FpMatsuri2026.HList as FpMatsuri2026.HList.Safe) requires (FpMatsuri2026.HList.Core as FpMatsuri2026.HList.Safe.Core)
 
   reexported-modules:
     FpMatsuri2026.ExtRecord.Safe,

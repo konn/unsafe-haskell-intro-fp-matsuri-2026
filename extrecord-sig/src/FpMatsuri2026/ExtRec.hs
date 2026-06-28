@@ -1,5 +1,16 @@
+{-# LANGUAGE ConstraintKinds #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE DerivingVia #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE MagicHash #-}
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE RequiredTypeArguments #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE UndecidableSuperClasses #-}
 {-# OPTIONS_GHC -Wno-redundant-constraints #-}
 
@@ -98,7 +109,7 @@ instance (All (ShowableField f) kvs) => Show (Record f kvs) where
             intersperse (Endo $ showString ", ") $
               DL.toList $
                 hfoldMap showsField $
-                  hzipWith Pair (allDict @_ @(ShowableField f) @kvs) fs
+                  hzipWith Pair (allDict @(ShowableField f) @kvs) fs
         )
       . showChar '}'
     where
@@ -119,6 +130,7 @@ mapRecord f (MkRecord fs) = MkRecord $ hmap f' fs
     f' :: forall kv. Field f kv -> Field g kv
     f' (MkField v) = MkField (f (Fst kv) v)
 
+type OverKV :: (a -> b -> Constraint) -> (a, b) -> Constraint
 class (c (Fst kv) (Snd kv)) => OverKV c kv
 
 instance (c k v) => OverKV c '(k, v)
@@ -132,5 +144,5 @@ elimAll ::
   r
 elimAll l _ k =
   withDict1
-    (hLookup @'(l, Lookup' l fs) (allDict @_ @(OverKV c) @fs))
+    (hLookup @'(l, Lookup' l fs) (allDict @(OverKV c) @fs))
     k

@@ -15,12 +15,12 @@ module FpMatsuri2026.HList.Safe.Core (
   hfoldl',
   hfoldr,
   hfoldr',
-  All(..),
+  All (..),
 ) where
 
 import Data.Kind
-import GHC.TypeError
 import FpMatsuri2026.TypeOps
+import GHC.TypeError
 
 type HList :: (k -> Type) -> [k] -> Type
 data HList f xs where
@@ -41,7 +41,6 @@ instance All c '[] where
 
 instance (c x, All c xs) => All c (x ': xs) where
   allDict = Dict1 :- allDict
-
 
 hLookup :: forall x xs f. (Member x xs) => HList f xs -> f x
 hLookup xs = fst (hGetSet @_ @x xs)

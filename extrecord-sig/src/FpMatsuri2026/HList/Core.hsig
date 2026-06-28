@@ -3,8 +3,7 @@ signature FpMatsuri2026.HList.Core (
   HList ,
   (<|),
   hnil,
-  Member,
-  hGetSet,
+  Member(..),
   hmap,
   hzipWith,
   hzipWith3,
@@ -15,8 +14,7 @@ signature FpMatsuri2026.HList.Core (
   hfoldl',
   hfoldr,
   hfoldr',
-  All,
-  allDict,
+  All(..),
 ) where
 
 import Data.Kind
@@ -73,6 +71,6 @@ hintercalateMap1 ::
   HList f (x ': xs) ->
   w
 
-type All :: (k -> Constraint) -> [k] -> Constraint
+type All :: forall {k}. (k -> Constraint) -> [k] -> Constraint
 class All c xs where
   allDict :: HList (Dict1 c) xs
