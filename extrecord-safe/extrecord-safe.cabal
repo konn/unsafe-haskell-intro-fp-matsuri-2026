@@ -116,25 +116,14 @@ library
     vector,
 
   mixins:
-    extrecord-sig (FpMatsuri2026.HList as FpMatsuri2026.HList.Safe) requires (FpMatsuri2026.HList.Core as FpMatsuri2026.HList.Safe.Core)
+    extrecord-sig requires (FpMatsuri2026.HList.Core as FpMatsuri2026.HList.Safe.Core)
 
   reexported-modules:
-    FpMatsuri2026.HList.Safe.Core
+    FpMatsuri2026.ExtRecord.Safe,
+    FpMatsuri2026.HList.Safe,
+    FpMatsuri2026.HList.Safe.Core,
 
-executable extrecord
-  import: defaults
-  hs-source-dirs: app
-  main-is: Main.hs
-  -- cabal-gild: discover app --exclude=app/Main.hs
-  other-modules:
-  ghc-options:
-    -threaded
-    -rtsopts
-    -with-rtsopts=-N
-
-  build-depends: extrecord
-
-test-suite extrecord-test
+test-suite extrecord-safe-test
   import: defaults
   type: exitcode-stdio-1.0
   main-is: Test.hs
@@ -147,4 +136,4 @@ test-suite extrecord-test
     -rtsopts
     -with-rtsopts=-N
 
-  build-depends: extrecord
+  build-depends: extrecord-safe

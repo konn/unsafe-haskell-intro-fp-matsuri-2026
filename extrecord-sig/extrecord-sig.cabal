@@ -64,7 +64,7 @@ library
     lens,
     linear-base,
 
-  -- cabal-gild: discover src --exclude=src/**/*.hs
+  -- cabal-gild: discover src --include=src/**/*.hsig
   signatures: FpMatsuri2026.HList.Core
   -- cabal-gild: discover src --exclude=src/**/Internal.hs --exclude=src/**/Internal/**/*.hs --exclude=src/**/*.hsig
   exposed-modules:
