@@ -1,0 +1,75 @@
+cabal-version: 3.4
+name: extrecord-sig
+version: 0.1.0.0
+description: Please see the README on GitHub at <https://github.com/konn/unsafe-haskell-intro-fp-matsuri-2026#readme>
+homepage: https://github.com/konn/unsafe-haskell-intro-fp-matsuri-2026#readme
+bug-reports: https://github.com/konn/unsafe-haskell-intro-fp-matsuri-2026/issues
+author: Hiromi ISHII
+maintainer: konn.jinro_at_gmail.com
+copyright: (c) Hiromi ISHII 2026- present
+license: BSD-3-Clause
+license-file: LICENSE
+build-type: Simple
+tested-with:
+  ghc ==9.12.4
+
+extra-doc-files:
+  CHANGELOG.md
+  README.md
+
+source-repository head
+  type: git
+  location: https://github.com/konn/unsafe-haskell-intro-fp-matsuri-2026
+  subdir: hlist-interface
+
+common defaults
+  autogen-modules: Paths_extrecord_sig
+  other-modules: Paths_extrecord_sig
+  ghc-options:
+    -Wall
+    -Wcompat
+    -Widentities
+    -Wincomplete-record-updates
+    -Wincomplete-uni-patterns
+    -Wmissing-export-lists
+    -Wmissing-home-modules
+    -Wpartial-fields
+    -Wredundant-constraints
+    -Wunused-packages
+
+  default-language: GHC2021
+  default-extensions:
+    ConstraintKinds
+    DataKinds
+    DeriveAnyClass
+    DerivingStrategies
+    DerivingVia
+    GADTs
+    KindSignatures
+    RankNTypes
+    ScopedTypeVariables
+    TypeFamilies
+    UndecidableInstances
+
+  build-depends: base >=4.7 && <5
+
+library
+  import: defaults
+  hs-source-dirs: src
+  build-depends:
+    barbies,
+    bifunctors,
+    dlist,
+    extrecord-core,
+    lens,
+    linear-base,
+
+  -- cabal-gild: discover src --exclude=src/**/*.hs
+  signatures: FpMatsuri2026.HList.Core
+  -- cabal-gild: discover src --exclude=src/**/Internal.hs --exclude=src/**/Internal/**/*.hs --exclude=src/**/*.hsig
+  exposed-modules:
+    FpMatsuri2026.ExtRec
+    FpMatsuri2026.HList
+
+  -- cabal-gild: discover src --include=src/**/Internal.hs --include=src/**/Internal/**/*.hs
+  other-modules:

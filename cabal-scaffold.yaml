@@ -1,0 +1,14 @@
+templateDirs: []
+hpack: false
+
+defaults:
+  template: monorepo-single
+  snapshot: lts
+  project-file: false
+  ghc: 9.12.4
+
+params:
+  monorepo: unsafe-haskell-intro-fp-matsuri-2026
+  author-name: Hiromi ISHII
+  author-email: konn.jinro_at_gmail.com
+  github-username: konn

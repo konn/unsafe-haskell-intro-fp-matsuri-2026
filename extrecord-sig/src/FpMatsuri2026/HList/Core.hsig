@@ -1,0 +1,79 @@
+{-# LANGUAGE DataKinds, GADTs, TypeFamilies #-}
+signature FpMatsuri2026.HList.Core (
+  HList ,
+  (<|),
+  hnil,
+  Member,
+  hGetSet,
+  hmap,
+  hzipWith,
+  hzipWith3,
+  hfoldMap,
+  hfoldMap1,
+  hintercalateMap1,
+  hfoldl,
+  hfoldl',
+  hfoldr,
+  hfoldr',
+  All,
+  allDict,
+) where
+
+import Data.Kind
+import GHC.TypeError
+import FpMatsuri2026.TypeOps
+
+type HList :: (k -> Type) -> [k] -> Type
+data HList f xs
+
+(<|) :: f x -> HList f xs -> HList f (x ': xs)
+
+infixr 5 <|
+
+hnil :: HList f '[]
+
+type Member :: k -> [k] -> Constraint
+class Member x xs
+
+hGetSet :: Member x xs => HList f xs -> (f x, f x -> HList f xs)
+
+instance
+  (Unsatisfiable ('ShowType x ':<>: 'Text " is not a member")) =>
+  Member x '[]
+  where
+
+instance {-# OVERLAPPING #-} Member x (x ': xs)
+
+instance
+  {-# OVERLAPPABLE #-}
+  (Member x xs) =>
+  Member x (y ': xs)
+
+hzipWith :: (forall v. f v -> g v -> k v) -> HList f xs -> HList g xs -> HList k xs
+
+hzipWith3 :: (forall v. f v -> g v -> k v -> h v) -> HList f xs -> HList g xs -> HList k xs -> HList h xs
+
+hfoldMap1 :: forall w f x xs. (Semigroup w) => (forall v. f v -> w) -> HList f (x ': xs) -> w
+
+hfoldMap :: forall w f xs. (Monoid w) => (forall v. f v -> w) -> HList f xs -> w
+
+hfoldl :: forall r f xs. (forall v. r -> f v -> r) -> r -> HList f xs -> r
+
+hfoldl' :: forall r f xs. (forall v. r -> f v -> r) -> r -> HList f xs -> r
+
+hfoldr :: forall r f xs. (forall v. f v -> r -> r) -> r -> HList f xs -> r
+
+hfoldr' :: forall r f xs. (forall v. f v -> r -> r) -> r -> HList f xs -> r
+
+hmap :: (forall v. f v -> g v) -> HList f xs -> HList g xs
+
+hintercalateMap1 ::
+  (Semigroup w) =>
+  w ->
+  (forall v. f v -> w) ->
+  HList f (x ': xs) ->
+  w
+
+type All :: (k -> Constraint) -> [k] -> Constraint
+class All c xs
+allDict :: All c xs => HList (Dict1 c) xs

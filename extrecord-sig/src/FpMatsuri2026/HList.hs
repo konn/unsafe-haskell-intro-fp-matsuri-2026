@@ -1,0 +1,13 @@
+module FpMatsuri2026.HList (
+  module FpMatsuri2026.HList.Core,
+  hLookup,
+  hReplace,
+) where
+
+import FpMatsuri2026.HList.Core
+
+hLookup :: forall x xs f. (Member x xs) => HList f xs -> f x
+hLookup xs = fst (hGetSet @x xs)
+
+hReplace :: forall x xs f. (Member x xs) => f x -> HList f xs -> HList f xs
+hReplace v xs = snd (hGetSet @x xs) v
