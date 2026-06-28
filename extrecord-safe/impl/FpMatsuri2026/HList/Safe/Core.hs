@@ -16,7 +16,6 @@ module FpMatsuri2026.HList.Safe.Core (
   hfoldr,
   hfoldr',
   All(..),
-  allDict,
 ) where
 
 import Data.Kind
@@ -35,16 +34,14 @@ class Member x xs where
   hGetSet :: HList f xs -> (f x, f x -> HList f xs)
 
 class All c xs where
-  allDict_ :: HList (Dict1 c) xs
+  allDict :: HList (Dict1 c) xs
 
 instance All c '[] where
-  allDict_ = HNil
+  allDict = HNil
 
 instance (c x, All c xs) => All c (x ': xs) where
-  allDict_ = Dict1 :- allDict_
+  allDict = Dict1 :- allDict
 
-allDict :: All c xs => HList (Dict1 c) xs
-allDict = allDict_
 
 hLookup :: forall x xs f. (Member x xs) => HList f xs -> f x
 hLookup xs = fst (hGetSet @_ @x xs)

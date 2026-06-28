@@ -33,9 +33,8 @@ infixr 5 <|
 hnil :: HList f '[]
 
 type Member :: k -> [k] -> Constraint
-class Member x xs
-
-hGetSet :: Member x xs => HList f xs -> (f x, f x -> HList f xs)
+class Member x xs where
+  hGetSet :: HList f xs -> (f x, f x -> HList f xs)
 
 instance
   (Unsatisfiable ('ShowType x ':<>: 'Text " is not a member")) =>
@@ -75,5 +74,5 @@ hintercalateMap1 ::
   w
 
 type All :: (k -> Constraint) -> [k] -> Constraint
-class All c xs
-allDict :: All c xs => HList (Dict1 c) xs
+class All c xs where
+  allDict :: HList (Dict1 c) xs

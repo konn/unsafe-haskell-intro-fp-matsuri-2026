@@ -98,7 +98,7 @@ instance (All (ShowableField f) kvs) => Show (Record f kvs) where
             intersperse (Endo $ showString ", ") $
               DL.toList $
                 hfoldMap showsField $
-                  hzipWith Pair (allDict @(ShowableField f) @kvs) fs
+                  hzipWith Pair (allDict @_ @(ShowableField f) @kvs) fs
         )
       . showChar '}'
     where
@@ -132,5 +132,5 @@ elimAll ::
   r
 elimAll l _ k =
   withDict1
-    (hLookup @'(l, Lookup' l fs) (allDict @(OverKV c) @fs))
+    (hLookup @'(l, Lookup' l fs) (allDict @_ @(OverKV c) @fs))
     k
