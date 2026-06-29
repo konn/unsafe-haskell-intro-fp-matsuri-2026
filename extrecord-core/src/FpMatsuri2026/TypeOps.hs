@@ -14,10 +14,12 @@ module FpMatsuri2026.TypeOps (
   MapApply,
   Fst1,
   Apply,
+  ElemAt,
 ) where
 
 import Data.Kind
 import GHC.TypeError
+import GHC.TypeNats (type (-))
 
 data Dict1 c x where
   Dict1 :: (c x) => Dict1 c x
@@ -76,3 +78,7 @@ type family Delete k xs where
   Delete k '[] = '[]
   Delete x (x ': xs) = xs
   Delete k (x' ': xs) = x' ': Delete k xs
+
+type family ElemAt i xs where
+  ElemAt 0 (x ': xs) = x
+  ElemAt n (x ': xs) = ElemAt (n - 1) xs

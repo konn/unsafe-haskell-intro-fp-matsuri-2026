@@ -19,9 +19,33 @@ module FpMatsuri2026.HList (
 ) where
 
 import FpMatsuri2026.HList.Core
+import FpMatsuri2026.TypeOps
 
 hLookup :: forall x xs f. (Member x xs) => HList f xs -> f x
 hLookup xs = fst (hGetSet @_ @x xs)
 
 hReplace :: forall x xs f. (Member x xs) => f x -> HList f xs -> HList f xs
 hReplace v xs = snd (hGetSet @_ @x xs) v
+
+newtype JoinWith a = JoinWith {joinee :: (a -> a)}
+
+instance (Semigroup a) => Semigroup (JoinWith a) where
+  JoinWith a <> JoinWith b = JoinWith $ \j -> a j <> j <> b j
+
+hintercalateMap1 ::
+  (Semigroup w) =>
+  w ->
+  (forall v. f v -> w) ->
+  HList f (x ': xs) ->
+  w
+hintercalateMap1 sep f =
+  flip joinee sep . hfoldMap1 (JoinWith . const . f)
+
+class All c xs where
+  allDict :: HList (Dict1 c) xs
+
+instance All c '[] where
+  allDict = hnil
+
+instance (c x, All c xs) => All c (x ': xs) where
+  allDict = Dict1 <| allDict

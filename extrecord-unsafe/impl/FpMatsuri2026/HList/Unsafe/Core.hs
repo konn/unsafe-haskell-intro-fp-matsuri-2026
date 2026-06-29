@@ -1,0 +1,192 @@
+module FpMatsuri2026.HList.Unsafe.Core (
+  HList (..),
+  Member (..),
+  (<|),
+  hnil,
+  hmap,
+  hzipWith,
+  hzipWith3,
+  hfoldMap,
+  hfoldMap1,
+  hfoldl,
+  hfoldl',
+  hfoldr,
+  hfoldr',
+) where
+
+import Data.Kind
+import Data.Maybe (fromJust)
+import Data.Proxy (Proxy)
+import Data.Vector qualified as V
+import FpMatsuri2026.TypeOps
+import GHC.Exts (Any)
+import GHC.TypeError
+import GHC.TypeNats (SomeNat (..), someNatVal)
+import Unsafe.Coerce (unsafeCoerce)
+
+type HList :: (k -> Type) -> [k] -> Type
+newtype HList f xs = UnsafeHList (V.Vector Any)
+
+type Member :: k -> [k] -> Constraint
+class Member x xs where
+  hGetSet :: HList f xs -> (f x, f x -> HList f xs)
+
+instance
+  (Unsatisfiable ('ShowType x ':<>: 'Text " is not a member")) =>
+  Member x '[]
+  where
+  hGetSet = unsatisfiable
+
+instance {-# OVERLAPPING #-} Member x (x ': xs) where
+  hGetSet (UnsafeHList xs) =
+    let x = unsafeCoerce $ V.unsafeHead xs
+     in (x, \v' -> UnsafeHList $ V.cons (unsafeCoerce v') (V.unsafeTail xs))
+  {-# INLINE hGetSet #-}
+
+instance
+  {-# OVERLAPPABLE #-}
+  (Member x xs) =>
+  Member x (y ': xs)
+  where
+  hGetSet (UnsafeHList xxs) =
+    let (!hd, !tl) = fromJust $ V.uncons xxs
+        (v, f) = hGetSet (UnsafeHList tl :: HList f xs)
+     in ( v
+        , \v' ->
+            let UnsafeHList xs' = f v'
+             in UnsafeHList $ V.cons hd xs'
+        )
+  {-# INLINE hGetSet #-}
+
+hzipWith ::
+  forall f g k xs.
+  (forall v. f v -> g v -> k v) ->
+  HList f xs ->
+  HList g xs ->
+  HList k xs
+hzipWith f (UnsafeHList fs) (UnsafeHList gs) =
+  UnsafeHList $
+    V.izipWith
+      ( \i fx gx ->
+          case someNatVal (fromIntegral i) of
+            SomeNat (_ :: Proxy n) ->
+              unsafeCoerce (f (unsafeCoerce fx :: f (ElemAt n xs)) (unsafeCoerce gx :: g (ElemAt n xs)))
+      )
+      fs
+      gs
+
+hzipWith3 ::
+  forall f g k h xs.
+  (forall v. f v -> g v -> k v -> h v) ->
+  HList f xs ->
+  HList g xs ->
+  HList k xs ->
+  HList h xs
+hzipWith3 f (UnsafeHList fs) (UnsafeHList gs) (UnsafeHList hs) =
+  UnsafeHList $
+    V.izipWith3
+      ( \i fx gx hx ->
+          case someNatVal (fromIntegral i) of
+            SomeNat (_ :: Proxy n) ->
+              let fx' = unsafeCoerce fx :: f (ElemAt n xs)
+                  gx' = unsafeCoerce gx :: g (ElemAt n xs)
+                  hx' = unsafeCoerce hx :: k (ElemAt n xs)
+               in unsafeCoerce $ f fx' gx' hx'
+      )
+      fs
+      gs
+      hs
+
+hfoldMap ::
+  forall w f xs.
+  (Monoid w) =>
+  (forall v. f v -> w) ->
+  HList f xs ->
+  w
+hfoldMap f (UnsafeHList xs) =
+  V.foldMap
+    ( \(i, x) -> case someNatVal (fromIntegral i) of
+        SomeNat (_ :: Proxy n) ->
+          f (unsafeCoerce x :: f (ElemAt n xs))
+    )
+    $ V.indexed xs
+
+hfoldMap1 ::
+  forall w f x xs.
+  (Semigroup w) =>
+  (forall v. f v -> w) ->
+  HList f (x ': xs) ->
+  w
+hfoldMap1 f (UnsafeHList xs) =
+  let (hd, tl) = fromJust $ V.uncons xs
+   in V.ifoldl'
+        ( \w' i x ->
+            case someNatVal (fromIntegral i) of
+              SomeNat (_ :: Proxy n) ->
+                w' <> f (unsafeCoerce x :: f (ElemAt n xs))
+        )
+        (f (unsafeCoerce hd :: f x))
+        tl
+
+hfoldl :: forall r f xs. (forall v. r -> f v -> r) -> r -> HList f xs -> r
+hfoldl f z (UnsafeHList xs) =
+  V.ifoldl
+    ( \z' i x ->
+        case someNatVal (fromIntegral i) of
+          SomeNat (_ :: Proxy n) ->
+            f z' (unsafeCoerce x :: f (ElemAt n xs))
+    )
+    z
+    xs
+
+hfoldl' :: forall r f xs. (forall v. r -> f v -> r) -> r -> HList f xs -> r
+hfoldl' f z (UnsafeHList xs) =
+  V.ifoldl'
+    ( \ !z' !i !x ->
+        case someNatVal (fromIntegral i) of
+          SomeNat (_ :: Proxy n) ->
+            f z' (unsafeCoerce x :: f (ElemAt n xs))
+    )
+    z
+    xs
+
+hfoldr :: forall r f xs. (forall v. f v -> r -> r) -> r -> HList f xs -> r
+hfoldr f z (UnsafeHList xs) =
+  V.ifoldr
+    ( \i x z' ->
+        case someNatVal (fromIntegral i) of
+          SomeNat (_ :: Proxy n) ->
+            f (unsafeCoerce x :: f (ElemAt n xs)) z'
+    )
+    z
+    xs
+
+hfoldr' :: forall r f xs. (forall v. f v -> r -> r) -> r -> HList f xs -> r
+hfoldr' f z (UnsafeHList xs) =
+  V.ifoldr'
+    ( \ !i !x !z' ->
+        case someNatVal (fromIntegral i) of
+          SomeNat (_ :: Proxy n) ->
+            f (unsafeCoerce x :: f (ElemAt n xs)) z'
+    )
+    z
+    xs
+
+hmap :: forall f g xs. (forall v. f v -> g v) -> HList f xs -> HList g xs
+hmap f (UnsafeHList xs) =
+  UnsafeHList $
+    V.imap
+      ( \i x ->
+          case someNatVal (fromIntegral i) of
+            SomeNat (_ :: Proxy n) ->
+              unsafeCoerce (f (unsafeCoerce x :: f (ElemAt n xs)))
+      )
+      xs
+
+(<|) :: f x -> HList f xs -> HList f (x ': xs)
+fx <| UnsafeHList xs = UnsafeHList (V.cons (unsafeCoerce fx) xs)
+
+infixr 5 <|
+
+hnil :: HList f '[]
+hnil = UnsafeHList V.empty

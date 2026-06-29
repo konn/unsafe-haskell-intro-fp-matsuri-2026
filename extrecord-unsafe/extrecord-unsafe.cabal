@@ -1,0 +1,138 @@
+cabal-version: 3.4
+name: extrecord-unsafe
+version: 0.1.0.0
+description: Please see the README on GitHub at <https://github.com/konn/unsafe-haskell-intro-fp-matsuri-2026/extrecord#readme>
+homepage: https://github.com/konn/unsafe-haskell-intro-fp-matsuri-2026#readme
+bug-reports: https://github.com/konn/unsafe-haskell-intro-fp-matsuri-2026/issues
+author: Hiromi ISHII
+maintainer: konn.jinro_at_gmail.com
+copyright: (c) Hiromi ISHII 2026- present
+license: BSD-3-Clause
+license-file: LICENSE
+build-type: Simple
+tested-with:
+  ghc ==9.12.4
+
+extra-doc-files:
+  CHANGELOG.md
+  README.md
+
+source-repository head
+  type: git
+  location: https://github.com/konn/unsafe-haskell-intro-fp-matsuri-2026
+  subdir: extrecord-unsafe
+
+common defaults
+  autogen-modules: Paths_extrecord_unsafe
+  other-modules: Paths_extrecord_unsafe
+  ghc-options:
+    -Wall
+    -Wcompat
+    -Widentities
+    -Wincomplete-record-updates
+    -Wincomplete-uni-patterns
+    -Wmissing-export-lists
+    -Wmissing-home-modules
+    -Wpartial-fields
+    -Wredundant-constraints
+    -Wunused-packages
+
+  default-language: GHC2021
+  default-extensions:
+    ConstraintKinds
+    DataKinds
+    DeriveAnyClass
+    DerivingStrategies
+    DerivingVia
+    GADTs
+    KindSignatures
+    RankNTypes
+    ScopedTypeVariables
+    TypeFamilies
+    UndecidableInstances
+
+  build-depends: base >=4.7 && <5
+
+library extrecord-unsafe-impl
+  import: defaults
+  build-depends:
+    barbies,
+    bifunctors,
+    constraints,
+    containers,
+    dlist,
+    extrecord-core,
+    fmlist,
+    ghc-tcplugin-api,
+    ghc-tcplugins-extra,
+    lens,
+    mtl,
+    primitive,
+    reflection,
+    semialign,
+    singletons,
+    singletons-base,
+    singletons-th,
+    tagged,
+    text,
+    these,
+    transformers,
+    unordered-containers,
+    vector,
+
+  hs-source-dirs: impl
+  -- cabal-gild: discover impl --exclude=impl/**/Internal.hs --exclude=impl/**/Internal/**/*.hs
+  exposed-modules: FpMatsuri2026.HList.Unsafe.Core
+  -- cabal-gild: discover impl --include=impl/**/Internal.hs --include=impl/**/Internal/**/*.hs
+  other-modules:
+
+library
+  import: defaults
+  build-depends:
+    barbies,
+    bifunctors,
+    constraints,
+    containers,
+    dlist,
+    extrecord-sig,
+    extrecord-unsafe:extrecord-unsafe-impl,
+    fmlist,
+    ghc-tcplugin-api,
+    ghc-tcplugins-extra,
+    lens,
+    mtl,
+    primitive,
+    reflection,
+    semialign,
+    singletons,
+    singletons-base,
+    singletons-th,
+    tagged,
+    text,
+    these,
+    transformers,
+    unordered-containers,
+    vector,
+
+  mixins:
+    extrecord-sig (FpMatsuri2026.ExtRec as FpMatsuri2026.ExtRecord.Unsafe, FpMatsuri2026.HList as FpMatsuri2026.HList.Unsafe) requires (FpMatsuri2026.HList.Core as FpMatsuri2026.HList.Unsafe.Core)
+
+  reexported-modules:
+    FpMatsuri2026.ExtRecord.Unsafe,
+    FpMatsuri2026.HList.Unsafe,
+    FpMatsuri2026.HList.Unsafe.Core,
+
+test-suite extrecord-unsafe-test
+  import: defaults
+  type: exitcode-stdio-1.0
+  main-is: Test.hs
+  hs-source-dirs: test
+  -- cabal-gild: discover test --exclude=test/Test.hs
+  other-modules:
+  ghc-options:
+    -threaded
+    -O2
+    -rtsopts
+    -with-rtsopts=-N
+
+  build-depends: extrecord-unsafe
