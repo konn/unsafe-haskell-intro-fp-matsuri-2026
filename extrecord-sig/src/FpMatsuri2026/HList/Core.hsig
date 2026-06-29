@@ -6,12 +6,16 @@ signature FpMatsuri2026.HList.Core (
   hmap,
   hzipWith,
   hzipWith3,
+  hzipWithM,
+  hzipWith3M,
   hfoldMap,
   hfoldMap1,
   hfoldl,
   hfoldl',
   hfoldr,
   hfoldr',
+  htraverse,
+  htraverse_,
 ) where
 
 import Data.Kind
@@ -35,6 +39,10 @@ hzipWith :: (forall v. f v -> g v -> k v) -> HList f xs -> HList g xs -> HList k
 
 hzipWith3 :: (forall v. f v -> g v -> k v -> h v) -> HList f xs -> HList g xs -> HList k xs -> HList h xs
 
+hzipWithM :: (Applicative m) => (forall v. f v -> g v -> m (k v)) -> HList f xs -> HList g xs -> m (HList k xs)
+
+hzipWith3M :: (Applicative m) => (forall v. f v -> g v -> k v -> m (h v)) -> HList f xs -> HList g xs -> HList k xs -> m (HList h xs)
+
 hfoldMap1 :: forall w f x xs. (Semigroup w) => (forall v. f v -> w) -> HList f (x ': xs) -> w
 
 hfoldMap :: forall w f xs. (Monoid w) => (forall v. f v -> w) -> HList f xs -> w
@@ -48,3 +56,9 @@ hfoldr :: forall r f xs. (forall v. f v -> r -> r) -> r -> HList f xs -> r
 hfoldr' :: forall r f xs. (forall v. f v -> r -> r) -> r -> HList f xs -> r
 
 hmap :: (forall v. f v -> g v) -> HList f xs -> HList g xs
+
+htraverse :: (Applicative m) => (forall v. f v -> m (g v)) -> HList f xs -> m (HList g xs)
+
+htraverse_ :: (Applicative m) => (forall v. f v -> m ()) -> HList f xs -> m ()
+
+

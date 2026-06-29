@@ -8,6 +8,8 @@ module FpMatsuri2026.HList (
   hmap,
   hzipWith,
   hzipWith3,
+  hzipWithM,
+  hzipWith3M,
   hfoldMap,
   hfoldMap1,
   hintercalateMap1,
@@ -15,6 +17,10 @@ module FpMatsuri2026.HList (
   hfoldl',
   hfoldr,
   hfoldr',
+  htraverse,
+  htraverse_,
+  hfor,
+  hfor_,
   All (..),
 ) where
 
@@ -49,3 +55,17 @@ instance All c '[] where
 
 instance (c x, All c xs) => All c (x ': xs) where
   allDict = Dict1 <| allDict
+
+hfor ::
+  (Applicative m) =>
+  HList f xs ->
+  (forall v. f v -> m (g v)) ->
+  m (HList g xs)
+hfor xs f = htraverse f xs
+
+hfor_ ::
+  (Applicative m) =>
+  HList f xs ->
+  (forall v. f v -> m ()) ->
+  m ()
+hfor_ xs f = htraverse_ f xs

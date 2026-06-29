@@ -6,15 +6,20 @@ module FpMatsuri2026.HList.Unsafe.Core (
   hmap,
   hzipWith,
   hzipWith3,
+  hzipWithM,
+  hzipWith3M,
   hfoldMap,
   hfoldMap1,
   hfoldl,
   hfoldl',
   hfoldr,
   hfoldr',
+  htraverse,
+  htraverse_,
 ) where
 
 import Control.Lens (ix, (&), (.~))
+import Data.Foldable (traverse_)
 import Data.Kind
 import Data.Maybe (fromJust)
 import Data.Proxy (Proxy (..))
@@ -92,6 +97,44 @@ hzipWith3 f (UnsafeHList fs) (UnsafeHList gs) (UnsafeHList hs) =
       fs
       gs
       hs
+
+hzipWithM ::
+  (Applicative m) =>
+  (forall v. f v -> g v -> m (k v)) ->
+  HList f xs ->
+  HList g xs ->
+  m (HList k xs)
+hzipWithM f (UnsafeHList fs :: HList f xs) (UnsafeHList gs) =
+  UnsafeHList
+    <$> traverse
+      ( \(i, (fx, gx)) ->
+          case someNatVal (fromIntegral i) of
+            SomeNat (_ :: Proxy n) ->
+              let fx' = unsafeCoerce fx :: f (ElemAt n xs)
+                  gx' = unsafeCoerce gx :: g (ElemAt n xs)
+               in unsafeCoerce <$> f fx' gx'
+      )
+      (V.indexed $ V.zip fs gs)
+
+hzipWith3M ::
+  (Applicative m) =>
+  (forall v. f v -> g v -> k v -> m (h v)) ->
+  HList f xs ->
+  HList g xs ->
+  HList k xs ->
+  m (HList h xs)
+hzipWith3M f (UnsafeHList fs :: HList f xs) (UnsafeHList gs) (UnsafeHList hs) =
+  UnsafeHList
+    <$> traverse
+      ( \(i, (fx, gx, hx)) ->
+          case someNatVal (fromIntegral i) of
+            SomeNat (_ :: Proxy n) ->
+              let fx' = unsafeCoerce fx :: f (ElemAt n xs)
+                  gx' = unsafeCoerce gx :: g (ElemAt n xs)
+                  hx' = unsafeCoerce hx :: k (ElemAt n xs)
+               in unsafeCoerce <$> f fx' gx' hx'
+      )
+      (V.indexed $ V.zip3 fs gs hs)
 
 hfoldMap ::
   forall w f xs.
@@ -186,3 +229,22 @@ infixr 5 <|
 
 hnil :: HList f '[]
 hnil = UnsafeHList V.empty
+
+htraverse :: (Applicative m) => (forall v. f v -> m (g v)) -> HList f xs -> m (HList g xs)
+htraverse f (UnsafeHList xs :: HList f xs) =
+  UnsafeHList
+    <$> traverse
+      ( \(i, x) -> case someNatVal (fromIntegral i) of
+          SomeNat (_ :: Proxy n) ->
+            unsafeCoerce <$> f (unsafeCoerce x :: f (ElemAt n xs))
+      )
+      (V.indexed xs)
+
+htraverse_ :: (Applicative m) => (forall v. f v -> m ()) -> HList f xs -> m ()
+htraverse_ f (UnsafeHList xs :: HList f xs) =
+  traverse_
+    ( \(i, x) -> case someNatVal (fromIntegral i) of
+        SomeNat (_ :: Proxy n) ->
+          f (unsafeCoerce x :: f (ElemAt n xs))
+    )
+    (V.indexed xs)

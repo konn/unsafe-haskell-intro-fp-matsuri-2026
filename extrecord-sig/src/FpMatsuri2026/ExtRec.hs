@@ -22,7 +22,12 @@ module FpMatsuri2026.ExtRec (
   hGetField,
   type (∉),
   insert,
-  mapRecord,
+  hmap,
+  hzipWith,
+  hzipWith3,
+  hfoldMap,
+  htraverse_,
+  htraverse,
 ) where
 
 import Control.Lens (Lens', lens)
@@ -34,12 +39,22 @@ import Data.Kind
 import Data.List (intersperse)
 import Data.Monoid (Endo (..))
 import Data.Proxy (Proxy (..))
-import FpMatsuri2026.HList
+import FpMatsuri2026.HList (
+  All (..),
+  HList,
+  Member (..),
+  hLookup,
+  hReplace,
+  hnil,
+  (<|),
+ )
+import FpMatsuri2026.HList qualified as HL
 import FpMatsuri2026.TypeOps
 import GHC.Base (Proxy#, proxy#)
 import GHC.Generics (Generic)
 import GHC.Records
 import GHC.TypeLits
+import Prelude hiding (foldMap, map)
 
 type Field :: (Symbol -> k -> Type) -> (Symbol, k) -> Type
 newtype Field f kv = MkField (f (Fst kv) (Snd kv))
@@ -108,8 +123,8 @@ instance (All (ShowableField f) kvs) => Show (Record f kvs) where
         ( fold $
             intersperse (Endo $ showString ", ") $
               DL.toList $
-                hfoldMap showsField $
-                  hzipWith Pair (allDict @(ShowableField f) @kvs) fs
+                HL.hfoldMap showsField $
+                  HL.hzipWith Pair (allDict @(ShowableField f) @kvs) fs
         )
       . showChar '}'
     where
@@ -123,12 +138,6 @@ instance (All (ShowableField f) kvs) => Show (Record f kvs) where
 
 empty :: Record f '[]
 empty = MkRecord hnil
-
-mapRecord :: forall f g fs. (forall v. forall (l :: Symbol) -> f l v -> g l v) -> Record f fs -> Record g fs
-mapRecord f (MkRecord fs) = MkRecord $ hmap f' fs
-  where
-    f' :: forall kv. Field f kv -> Field g kv
-    f' (MkField v) = MkField (f (Fst kv) v)
 
 type OverKV :: (a -> b -> Constraint) -> (a, b) -> Constraint
 class (c (Fst kv) (Snd kv)) => OverKV c kv
@@ -146,3 +155,69 @@ elimAll l _ k =
   withDict1
     (hLookup @'(l, Lookup' l fs) (allDict @(OverKV c) @fs))
     k
+
+hmap ::
+  forall f g fs.
+  (forall v. forall (l :: Symbol) -> f l v -> g l v) ->
+  Record f fs ->
+  Record g fs
+hmap f (MkRecord fs) =
+  MkRecord $ HL.hmap (\(MkField v :: Field f kv) -> MkField (f (Fst kv) v)) fs
+
+htraverse_ ::
+  forall f m fs.
+  (Applicative m) =>
+  (forall v. forall (l :: Symbol) -> f l v -> m ()) ->
+  Record f fs ->
+  m ()
+htraverse_ f (MkRecord fs) =
+  HL.htraverse_ (\(MkField v :: Field f kv) -> f (Fst kv) v) fs
+
+htraverse ::
+  forall f g m fs.
+  (Applicative m) =>
+  (forall v. forall (l :: Symbol) -> f l v -> m (g l v)) ->
+  Record f fs ->
+  m (Record g fs)
+htraverse f (MkRecord fs) =
+  MkRecord
+    <$> HL.htraverse
+      (\(MkField v :: Field f kv) -> MkField <$> f (Fst kv) v)
+      fs
+
+hfoldMap ::
+  forall f m fs.
+  (Monoid m) =>
+  (forall v. forall (l :: Symbol) -> f l v -> m) ->
+  Record f fs ->
+  m
+hfoldMap f (MkRecord fs) =
+  HL.hfoldMap (\(MkField v :: Field f kv) -> f (Fst kv) v) fs
+
+hzipWith ::
+  forall f g h fs.
+  (forall v. forall (l :: Symbol) -> f l v -> g l v -> h l v) ->
+  Record f fs ->
+  Record g fs ->
+  Record h fs
+hzipWith f (MkRecord fs) (MkRecord gs) =
+  MkRecord $
+    HL.hzipWith
+      (\(MkField v :: Field f kv) (MkField w :: Field g kv) -> MkField (f (Fst kv) v w))
+      fs
+      gs
+
+hzipWith3 ::
+  forall f g h i fs.
+  (forall v. forall (l :: Symbol) -> f l v -> g l v -> h l v -> i l v) ->
+  Record f fs ->
+  Record g fs ->
+  Record h fs ->
+  Record i fs
+hzipWith3 f (MkRecord fs) (MkRecord gs) (MkRecord hs) =
+  MkRecord $
+    HL.hzipWith3
+      (\(MkField v :: Field f kv) (MkField w :: Field g kv) (MkField x :: Field h kv) -> MkField (f (Fst kv) v w x))
+      fs
+      gs
+      hs
