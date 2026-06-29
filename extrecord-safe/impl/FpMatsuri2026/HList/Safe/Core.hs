@@ -30,7 +30,7 @@ infixr 5 :-
 
 type Member :: k -> [k] -> Constraint
 class Member x xs where
-  hGetSet :: HList f xs -> (f x, f x -> HList f xs)
+  hGetSet :: (HList f xs -> f x, f x -> HList f xs -> HList f xs)
 
 instance
   (Unsatisfiable ('ShowType x ':<>: 'Text " is not a member")) =>
@@ -39,7 +39,7 @@ instance
   hGetSet = unsatisfiable
 
 instance {-# OVERLAPPING #-} Member x (x ': xs) where
-  hGetSet (v :- xs) = (v, \v' -> v' :- xs)
+  hGetSet = (\(v :- _) -> v, \v' (_ :- xs) -> v' :- xs)
   {-# INLINE hGetSet #-}
 
 instance
@@ -47,9 +47,10 @@ instance
   (Member x xs) =>
   Member x (y ': xs)
   where
-  hGetSet (y :- xs) =
-    let (v, f) = hGetSet @_ @x xs
-     in (v, \v' -> y :- f v')
+  hGetSet =
+    ( \(_ :- xs) -> fst (hGetSet @_ @x @xs) xs
+    , \v' (y :- xs) -> y :- snd (hGetSet @_ @x @xs) v' xs
+    )
   {-# INLINE hGetSet #-}
 
 hzipWith :: (forall v. f v -> g v -> k v) -> HList f xs -> HList g xs -> HList k xs

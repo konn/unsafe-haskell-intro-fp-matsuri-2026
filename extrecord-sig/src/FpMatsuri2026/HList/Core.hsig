@@ -33,7 +33,7 @@ hnil :: HList f '[]
 
 type Member :: k -> [k] -> Constraint
 class Member x xs where
-  hGetSet :: HList f xs -> (f x, f x -> HList f xs)
+  hGetSet :: (HList f xs -> f x, f x -> HList f xs -> HList f xs)
 
 hzipWith :: (forall v. f v -> g v -> k v) -> HList f xs -> HList g xs -> HList k xs
 
@@ -60,5 +60,3 @@ hmap :: (forall v. f v -> g v) -> HList f xs -> HList g xs
 htraverse :: (Applicative m) => (forall v. f v -> m (g v)) -> HList f xs -> m (HList g xs)
 
 htraverse_ :: (Applicative m) => (forall v. f v -> m ()) -> HList f xs -> m ()
-
-

@@ -40,7 +40,7 @@ type family IndexOf x xs where
 
 type Member :: k -> [k] -> Constraint
 class Member x xs where
-  hGetSet :: HList f xs -> (f x, f x -> HList f xs)
+  hGetSet :: (HList f xs -> f x, f x -> HList f xs -> HList f xs)
 
 instance
   {-# OVERLAPPING #-}
@@ -50,13 +50,13 @@ instance
   hGetSet = unsatisfiable
 
 instance {-# OVERLAPPABLE #-} (KnownNat (IndexOf x xs)) => Member x xs where
-  hGetSet (UnsafeHList xs) =
-    let !i =
-          fromIntegral $
-            natVal $
-              Proxy @(IndexOf x xs)
-        !x = unsafeCoerce $ V.unsafeIndex xs i
-     in (x, \ !v' -> UnsafeHList $ xs & ix i .~ unsafeCoerce v')
+  hGetSet =
+    let !i = fromIntegral $ natVal $ Proxy @(IndexOf x xs)
+     in ( \(UnsafeHList xs) ->
+            unsafeCoerce $ V.unsafeIndex xs i
+        , \ !v' (UnsafeHList xs) ->
+            UnsafeHList $! xs & ix i .~ unsafeCoerce v'
+        )
   {-# INLINE hGetSet #-}
 
 hzipWith ::

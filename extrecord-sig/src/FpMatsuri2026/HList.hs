@@ -28,10 +28,10 @@ import FpMatsuri2026.HList.Core
 import FpMatsuri2026.TypeOps
 
 hLookup :: forall x xs f. (Member x xs) => HList f xs -> f x
-hLookup xs = fst (hGetSet @_ @x xs)
+hLookup = fst $ hGetSet @_ @x
 
 hReplace :: forall x xs f. (Member x xs) => f x -> HList f xs -> HList f xs
-hReplace v xs = snd (hGetSet @_ @x xs) v
+hReplace = snd $ hGetSet @_ @x
 
 newtype JoinWith a = JoinWith {joinee :: (a -> a)}
 
