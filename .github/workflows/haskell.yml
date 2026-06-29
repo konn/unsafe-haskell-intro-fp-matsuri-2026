@@ -134,7 +134,9 @@ jobs:
         with:
           name: ${{env.artifact}}
       - name: Decompress
-        run: tar xaf ${{env.artifact}}/${{env.artifact}}.tar.zst
+        run: |
+          ls -R "${{ steps.download.outputs.download-path }}"
+          tar xaf "${{ steps.download.outputs.download-path }}/${{env.artifact}}.tar.zst"
       - name: Run Tests
         shell: bash
         run: |
