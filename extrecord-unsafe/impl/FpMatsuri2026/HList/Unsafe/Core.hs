@@ -14,48 +14,44 @@ module FpMatsuri2026.HList.Unsafe.Core (
   hfoldr',
 ) where
 
+import Control.Lens (ix, (&), (.~))
 import Data.Kind
 import Data.Maybe (fromJust)
-import Data.Proxy (Proxy)
+import Data.Proxy (Proxy (..))
 import Data.Vector qualified as V
 import FpMatsuri2026.TypeOps
 import GHC.Exts (Any)
 import GHC.TypeError
-import GHC.TypeNats (SomeNat (..), someNatVal)
+import GHC.TypeNats (KnownNat, SomeNat (..), natVal, someNatVal, type (+))
 import Unsafe.Coerce (unsafeCoerce)
 
 type HList :: (k -> Type) -> [k] -> Type
 newtype HList f xs = UnsafeHList (V.Vector Any)
+
+type family IndexOf x xs where
+  IndexOf x '[] = TypeError ('Text "A type `" :<>: 'ShowType x :<>: 'Text "' not found!")
+  IndexOf x (x ': xs) = 0
+  IndexOf x (y ': xs) = 1 + IndexOf x xs
 
 type Member :: k -> [k] -> Constraint
 class Member x xs where
   hGetSet :: HList f xs -> (f x, f x -> HList f xs)
 
 instance
+  {-# OVERLAPPING #-}
   (Unsatisfiable ('ShowType x ':<>: 'Text " is not a member")) =>
   Member x '[]
   where
   hGetSet = unsatisfiable
 
-instance {-# OVERLAPPING #-} Member x (x ': xs) where
+instance {-# OVERLAPPABLE #-} (KnownNat (IndexOf x xs)) => Member x xs where
   hGetSet (UnsafeHList xs) =
-    let x = unsafeCoerce $ V.unsafeHead xs
-     in (x, \v' -> UnsafeHList $ V.cons (unsafeCoerce v') (V.unsafeTail xs))
-  {-# INLINE hGetSet #-}
-
-instance
-  {-# OVERLAPPABLE #-}
-  (Member x xs) =>
-  Member x (y ': xs)
-  where
-  hGetSet (UnsafeHList xxs) =
-    let (!hd, !tl) = fromJust $ V.uncons xxs
-        (v, f) = hGetSet (UnsafeHList tl :: HList f xs)
-     in ( v
-        , \v' ->
-            let UnsafeHList xs' = f v'
-             in UnsafeHList $ V.cons hd xs'
-        )
+    let !i =
+          fromIntegral $
+            natVal $
+              Proxy @(IndexOf x xs)
+        !x = unsafeCoerce $ V.unsafeIndex xs i
+     in (x, \ !v' -> UnsafeHList $ xs & ix i .~ unsafeCoerce v')
   {-# INLINE hGetSet #-}
 
 hzipWith ::

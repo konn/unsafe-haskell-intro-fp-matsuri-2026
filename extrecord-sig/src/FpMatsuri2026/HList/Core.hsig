@@ -31,17 +31,6 @@ type Member :: k -> [k] -> Constraint
 class Member x xs where
   hGetSet :: HList f xs -> (f x, f x -> HList f xs)
 
-instance
-  (Unsatisfiable ('ShowType x ':<>: 'Text " is not a member")) =>
-  Member x '[]
-
-instance {-# OVERLAPPING #-} Member x (x ': xs)
-
-instance
-  {-# OVERLAPPABLE #-}
-  (Member x xs) =>
-  Member x (y ': xs)
-
 hzipWith :: (forall v. f v -> g v -> k v) -> HList f xs -> HList g xs -> HList k xs
 
 hzipWith3 :: (forall v. f v -> g v -> k v -> h v) -> HList f xs -> HList g xs -> HList k xs -> HList h xs
