@@ -62,9 +62,13 @@ jobs:
           ${{env.cabal}} v2-configure --enable-tests --enable-benchmarks --enable-optimisation=2
           ${{env.cabal}} update
       - name: Build Dependencies
+        # Seems like a bug in cabal prevents Backpack-inter-dependent packages
+        # from being built with --only-dependencies, so we build all packages here.
         run: |
-          ${{env.cabal}} build --only-dependencies all
+          ${{env.cabal}} build all
       - name: Save ~/.cabal/store Cache
+        # Alternative for --only-dependencies.
+        if: always()
         uses: actions/cache/save@v6
         with:
           path: ~/.cabal/store
