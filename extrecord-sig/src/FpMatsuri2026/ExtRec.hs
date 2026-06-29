@@ -160,58 +160,58 @@ elimAll l _ k =
 
 hmap ::
   forall f g fs.
-  (forall v. forall (l :: Symbol) -> f l v -> g l v) ->
+  (forall l v. f l v -> g l v) ->
   Record f fs ->
   Record g fs
 hmap f (MkRecord fs) =
-  MkRecord $ HL.hmap (\(MkField v :: Field f kv) -> MkField (f (Fst kv) v)) fs
+  MkRecord $ HL.hmap (\(MkField v :: Field f kv) -> MkField (f v)) fs
 
 htraverse_ ::
   forall f m fs.
   (Applicative m) =>
-  (forall v. forall (l :: Symbol) -> f l v -> m ()) ->
+  (forall l v. f l v -> m ()) ->
   Record f fs ->
   m ()
 htraverse_ f (MkRecord fs) =
-  HL.htraverse_ (\(MkField v :: Field f kv) -> f (Fst kv) v) fs
+  HL.htraverse_ (\(MkField v :: Field f kv) -> f v) fs
 
 htraverse ::
   forall f g m fs.
   (Applicative m) =>
-  (forall v. forall (l :: Symbol) -> f l v -> m (g l v)) ->
+  (forall l v. f l v -> m (g l v)) ->
   Record f fs ->
   m (Record g fs)
 htraverse f (MkRecord fs) =
   MkRecord
     <$> HL.htraverse
-      (\(MkField v :: Field f kv) -> MkField <$> f (Fst kv) v)
+      (\(MkField v :: Field f kv) -> MkField <$> f v)
       fs
 
 hfoldMap ::
   forall f m fs.
   (Monoid m) =>
-  (forall v. forall (l :: Symbol) -> f l v -> m) ->
+  (forall l v. f l v -> m) ->
   Record f fs ->
   m
 hfoldMap f (MkRecord fs) =
-  HL.hfoldMap (\(MkField v :: Field f kv) -> f (Fst kv) v) fs
+  HL.hfoldMap (\(MkField v :: Field f kv) -> f v) fs
 
 hzipWith ::
   forall f g h fs.
-  (forall v. forall (l :: Symbol) -> f l v -> g l v -> h l v) ->
+  (forall l v. f l v -> g l v -> h l v) ->
   Record f fs ->
   Record g fs ->
   Record h fs
 hzipWith f (MkRecord fs) (MkRecord gs) =
   MkRecord $
     HL.hzipWith
-      (\(MkField v :: Field f kv) (MkField w :: Field g kv) -> MkField (f (Fst kv) v w))
+      (\(MkField v :: Field f kv) (MkField w :: Field g kv) -> MkField (f v w))
       fs
       gs
 
 hzipWith3 ::
   forall f g h i fs.
-  (forall v. forall (l :: Symbol) -> f l v -> g l v -> h l v -> i l v) ->
+  (forall l v. f l v -> g l v -> h l v -> i l v) ->
   Record f fs ->
   Record g fs ->
   Record h fs ->
@@ -219,7 +219,7 @@ hzipWith3 ::
 hzipWith3 f (MkRecord fs) (MkRecord gs) (MkRecord hs) =
   MkRecord $
     HL.hzipWith3
-      (\(MkField v :: Field f kv) (MkField w :: Field g kv) (MkField x :: Field h kv) -> MkField (f (Fst kv) v w x))
+      (\(MkField v :: Field f kv) (MkField w :: Field g kv) (MkField x :: Field h kv) -> MkField (f v w x))
       fs
       gs
       hs
@@ -228,12 +228,12 @@ hmapC ::
   forall f g fs.
   forall c ->
   (All (OverKV c) fs) =>
-  (forall v. forall (l :: Symbol) -> (c l v) => f l v -> g l v) ->
+  (forall l v. (c l v) => f l v -> g l v) ->
   Record f fs ->
   Record g fs
 hmapC c f =
   MkRecord
     . HL.hzipWith
-      (\Dict1 (MkField fx :: Field f kv) -> MkField $ f (Fst kv) fx)
+      (\Dict1 (MkField fv) -> MkField $ f fv)
       (allDict @(OverKV c) @fs)
     . coerce
