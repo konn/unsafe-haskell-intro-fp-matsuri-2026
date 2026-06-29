@@ -23,6 +23,7 @@ module FpMatsuri2026.ExtRec (
   type (∉),
   insert,
   hmap,
+  hmapC,
   hzipWith,
   hzipWith3,
   hfoldMap,
@@ -31,6 +32,7 @@ module FpMatsuri2026.ExtRec (
 ) where
 
 import Control.Lens (Lens', lens)
+import Data.Coerce (coerce)
 import Data.DList (DList)
 import Data.DList qualified as DL
 import Data.Foldable (fold)
@@ -57,7 +59,7 @@ import GHC.TypeLits
 import Prelude hiding (foldMap, map)
 
 type Field :: (Symbol -> k -> Type) -> (Symbol, k) -> Type
-newtype Field f kv = MkField (f (Fst kv) (Snd kv))
+newtype Field f kv = MkField {unField :: f (Fst kv) (Snd kv)}
   deriving (Generic)
 
 deriving newtype instance (Show (f k a)) => Show (Field f '(k, a))
@@ -221,3 +223,17 @@ hzipWith3 f (MkRecord fs) (MkRecord gs) (MkRecord hs) =
       fs
       gs
       hs
+
+hmapC ::
+  forall f g fs.
+  forall c ->
+  (All (OverKV c) fs) =>
+  (forall v. forall (l :: Symbol) -> (c l v) => f l v -> g l v) ->
+  Record f fs ->
+  Record g fs
+hmapC c f =
+  MkRecord
+    . HL.hzipWith
+      (\Dict1 (MkField fx :: Field f kv) -> MkField $ f (Fst kv) fx)
+      (allDict @(OverKV c) @fs)
+    . coerce
