@@ -105,7 +105,7 @@ jobs:
 
         ## TODO: When OSS is ready, delete the following:
         plan:
-          - path: "cabal.project.freeze"
+          - path: "cabal.project"
             name: "ghc-9.12.4"
             ghc: "9.12.4"
             is_head: false
