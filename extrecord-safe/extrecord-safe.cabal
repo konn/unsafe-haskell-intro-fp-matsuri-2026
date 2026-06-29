@@ -56,30 +56,6 @@ common defaults
 library extrecord-safe-impl
   import: defaults
   build-depends:
-    barbies,
-    bifunctors,
-    constraints,
-    containers,
-    dlist,
-    extrecord-core,
-    fmlist,
-    ghc-tcplugin-api,
-    ghc-tcplugins-extra,
-    lens,
-    mtl,
-    primitive,
-    reflection,
-    semialign,
-    singletons,
-    singletons-base,
-    singletons-th,
-    tagged,
-    text,
-    these,
-    transformers,
-    unordered-containers,
-    vector,
-
   hs-source-dirs: impl
   -- cabal-gild: discover impl --exclude=impl/**/Internal.hs --exclude=impl/**/Internal/**/*.hs
   exposed-modules: FpMatsuri2026.HList.Safe.Core
@@ -89,30 +65,8 @@ library extrecord-safe-impl
 library
   import: defaults
   build-depends:
-    barbies,
-    bifunctors,
-    constraints,
-    containers,
-    dlist,
     extrecord-safe:extrecord-safe-impl,
     extrecord-sig,
-    fmlist,
-    ghc-tcplugin-api,
-    ghc-tcplugins-extra,
-    lens,
-    mtl,
-    primitive,
-    reflection,
-    semialign,
-    singletons,
-    singletons-base,
-    singletons-th,
-    tagged,
-    text,
-    these,
-    transformers,
-    unordered-containers,
-    vector,
 
   mixins:
     extrecord-sig (FpMatsuri2026.ExtRec as FpMatsuri2026.ExtRecord.Safe, FpMatsuri2026.HList as FpMatsuri2026.HList.Safe) requires (FpMatsuri2026.HList.Core as FpMatsuri2026.HList.Safe.Core)

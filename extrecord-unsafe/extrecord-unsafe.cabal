@@ -56,28 +56,8 @@ common defaults
 library extrecord-unsafe-impl
   import: defaults
   build-depends:
-    barbies,
-    bifunctors,
-    constraints,
-    containers,
-    dlist,
     extrecord-core,
-    fmlist,
-    ghc-tcplugin-api,
-    ghc-tcplugins-extra,
     lens,
-    mtl,
-    primitive,
-    reflection,
-    semialign,
-    singletons,
-    singletons-base,
-    singletons-th,
-    tagged,
-    text,
-    these,
-    transformers,
-    unordered-containers,
     vector,
 
   hs-source-dirs: impl
@@ -89,30 +69,8 @@ library extrecord-unsafe-impl
 library
   import: defaults
   build-depends:
-    barbies,
-    bifunctors,
-    constraints,
-    containers,
-    dlist,
     extrecord-sig,
     extrecord-unsafe:extrecord-unsafe-impl,
-    fmlist,
-    ghc-tcplugin-api,
-    ghc-tcplugins-extra,
-    lens,
-    mtl,
-    primitive,
-    reflection,
-    semialign,
-    singletons,
-    singletons-base,
-    singletons-th,
-    tagged,
-    text,
-    these,
-    transformers,
-    unordered-containers,
-    vector,
 
   mixins:
     extrecord-sig (FpMatsuri2026.ExtRec as FpMatsuri2026.ExtRecord.Unsafe, FpMatsuri2026.HList as FpMatsuri2026.HList.Unsafe) requires (FpMatsuri2026.HList.Core as FpMatsuri2026.HList.Unsafe.Core)
@@ -121,6 +79,10 @@ library
     FpMatsuri2026.ExtRecord.Unsafe,
     FpMatsuri2026.HList.Unsafe,
     FpMatsuri2026.HList.Unsafe.Core,
+
+  hs-source-dirs: src
+  -- cabal-gild: discover src --exclude=src/**/Internal.hs --exclude=src/**/Internal/**/*.hs
+  exposed-modules: FpMatsuri2026.ExtRec.Unsafe.Builder
 
 test-suite extrecord-unsafe-test
   import: defaults

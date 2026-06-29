@@ -57,12 +57,9 @@ library
   import: defaults
   hs-source-dirs: src
   build-depends:
-    barbies,
-    bifunctors,
     dlist,
     extrecord-core,
     lens,
-    linear-base,
 
   -- cabal-gild: discover src --include=src/**/*.hsig
   signatures: FpMatsuri2026.HList.Core
